@@ -14,7 +14,7 @@ var connection = mysql.createConnection({
   // Your password
   password: "KFields@1991!",
 //   Don't Forget to input DATABASE NAME HERE
-  database: "employee_trackerDB"
+  database: "mysqlemployee_trackerDB"
 });
 
 connection.connect(function(err) {
@@ -27,7 +27,7 @@ connection.connect(function(err) {
     inquirer
     .prompt({
       name: "action",
-      type: "list",
+      type: "rawlist",
       message: "What would you like to do?",
       choices: [
         "view all employees",
@@ -101,69 +101,134 @@ connection.connect(function(err) {
       message: "Employee's first name?"
     },
     {
-        name: "lastname",
-        type: "input",
-        message: "Employee's last name?"
+      name: "lastname",
+      type: "input",
+      message: "Employee's last name?"
     },
     {
-        name: "role",
-        type: "rawlist",
-        message: "Which Role would you like to assign?",
-        choices: [
-          "Sales Lead",
-          "Sales Person",
-          "Lead Engineer",
-          "Software Engineer",
-          "Accountant",
-          "Legal Team Lead",
-          "Lawyer"
-        ]
+      name: "role",
+      type: "list",
+      message: "Which Role would you like to assign?",
+      choices: [
+        "Sales Lead",
+        "Sales Person",
+        "Lead Engineer",
+        "Software Engineer",
+        "Accountant",
+        "Legal Team Lead",
+        "Lawyer"
+      ]
     },
     {
-        name: "manager",
-        type: "rawlist",
-        message: "Which Role would you like to assign?",
-        choices: [
-          ""
-        //   how do I get manager information here so that I can use info as a choice?
-        ]
-      }
-
+      name: "manager",
+      type: "input",
+      message: "Which manager will this employee be placed under?",
+      choices : [
+        "Kelsea",
+        "George",
+        "Somebody",
+        "Andrew"
+      ]
+    }
+    
     ).then(function(answer) {
-    connection.query("INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?)", [answer.firstname, answer.lastname, answer.role], function(err, res) {
+    var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?)"
+      connection.query(query, [answer.firstname, answer.lastname, answer.role, answer.manager], function(err, res) {
             if (err) throw err;
+          //   for (var i = 0; i < res.length; i++) {
+          //     console.log(
+          //       "first_name: " +
+          //         res[i].firstname +
+          //         " || last_name: " +
+          //         res[i].lastname +
+          //         " || role_id: " +
+          //         res[i].role +
+          //         " || manager_id: " +
+          //         res[i].manager
+          //     );
+          //   }
           console.table(res)
           start();
     })
-    })
+    // })
+  })
 }
+
+
+// function managersFunc() {
+//   connection.query("FROM employee (manager_id) VALUES (?)", [answer.manager], function(err, res) {
+//     if (err) throw err;
+//   console.table(res)
+//   start();
+// })
+// }
 //  should add employee to list of employees
-    // input: firstname
-    // input: lastname
-    // list option for: title/role
-    // list option for: department
-    //input:  salary
-    // list option for: manager
+//     input: firstname
+//     input: lastname
+//     list option for: title/role
+//     list option for: department
+//     input:  salary
+//     list option for: manager
 
-  function employeesByDepartment() {}
+  function employeesByDepartment() {
+    // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
+    var query = "SELECT * FROM department;";
+      connection.query(query, function(err, res) {
+        if (err) throw err;
+      console.table(res)
+      start();
+    })
+
+  }
 //   should render a chart of employees based off of which department they're in
-    //   choice of different departments to choose from 
-        //   followed by employee list for chosen
+//       choice of different departments to choose from >rawlist< 
+//           followed by employee list for chosen
 
-  function viewDepartments() {}
+  function viewDepartments() { var query = "SELECT * FROM department;";
+      connection.query(query, function(err, res) {
+        if (err) throw err;
+      console.table(res)
+      start();
+    })}
 //   should render the different available departments
 //   ?and employees in each?
+ 
 
-  function addDepartment() {}
+  function addDepartment() {
+    inquirer
+    .prompt({
+      name: "newDepartment",
+      type: "input",
+      message: "Enter New Department?"
+    },
+    ).then(function(answer){
+      
+    })
+  }
 //   should add input 
 
-  function viewRoles() {}
-//   should render different role options
-//   list of roles available
+  function viewRoles() { var query = "SELECT * FROM role;";
+  connection.query(query, function(err, res) {
+    if (err) throw err;
+  console.table(res)
+  start();
+})}
+// //   should render different role options
+// //   list of roles available
 
-  function updateEmployeeRole() {}
-//   choice of employee roles to choose from
+//   function updateEmployeeRole() {},
+// //   choice of employee roles to choose from
 
-  function addRole() {}
+  function addRole() {
+    inquirer
+    .prompt({
+      name: "newRole",
+      type: "input",
+      message: "Enter New Role Title?"
+    },
+    ).then(function(answer){
+      
+    })
+  }
 //   adds new role option to roles
-    // input salary?
+//     input salary?

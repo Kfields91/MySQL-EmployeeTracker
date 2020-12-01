@@ -94,63 +94,75 @@ connection.connect(function(err) {
 //   should render all employees list and info
 
   function addEmployee() {
+
+    connection.query("SELECT manager_id, first_name, last_name, role_id FROM employee", function(err, results) {
+      if (err) throw err;
+      
     inquirer
-    .prompt({
-      name: "firstname",
-      type: "input",
-      message: "Employee's first name?"
-    },
-    {
-      name: "lastname",
-      type: "input",
-      message: "Employee's last name?"
-    },
-    {
-      name: "role",
-      type: "list",
-      message: "Which Role would you like to assign?",
-      choices: [
-        "Sales Lead",
-        "Sales Person",
-        "Lead Engineer",
-        "Software Engineer",
-        "Accountant",
-        "Legal Team Lead",
-        "Lawyer"
-      ]
-    },
-    {
-      name: "manager",
-      type: "input",
-      message: "Which manager will this employee be placed under?",
-      choices : [
-        "Kelsea",
-        "George",
-        "Somebody",
-        "Andrew"
-      ]
-    }
+      .prompt([
+        {
+          name: "firstname",
+          type: "input",
+          message: "Employee's first name?"
+        },
+        {
+          name: "lastname",
+          type: "input",
+          message: "Employee's last name?"
+        },
+        {
+          name: "role",
+          type: "list",
+          message: "Which Role would you like to assign?",
+          choices: [
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7"
+          ]
+        },
+        {
+          name: "manager",
+          type: "list",
+          message: "Select Manager ID new employe will be placed under?",
+          choices : [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
     
-    ).then(function(answer) {
-    var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?)"
-      connection.query(query, [answer.firstname, answer.lastname, answer.role, answer.manager], function(err, res) {
-            if (err) throw err;
-          //   for (var i = 0; i < res.length; i++) {
-          //     console.log(
-          //       "first_name: " +
-          //         res[i].firstname +
-          //         " || last_name: " +
-          //         res[i].lastname +
-          //         " || role_id: " +
-          //         res[i].role +
-          //         " || manager_id: " +
-          //         res[i].manager
-          //     );
-          //   }
-          console.table(res)
+  
+  // })
+    
+    
+  ]).then(function(answer) {
+      console.log(answer);
+    //   // CONNECTION MESSED UP BECAUSE ROLE_ID AND MANAGER_ID TAKE IN INTEGERS AND I"M CURRENTLY TRYING TO PASS THEM STRINGS
+    //   // var query = "SELECT first_name, last_name, role_id, manager_id";
+    //  var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ?";
+    //   connection.query(query, (answer.firstname, answer.lastname, answer.role, answer.manager), function(err, res) {
+    //         if (err) throw err;
+    //         // for (var i = 0; i < res.length; i++) {
+    //         //   console.log(
+    //         //     "first_name: " +
+    //         //       res[i].firstname +
+    //         //       " || last_name: " +
+    //         //       res[i].lastname +
+    //         //       " || role_id: " +
+    //         //       res[i].role +
+    //         //       " || manager_id: " +
+    //         //       res[i].manager
+    //         //   );
+    //         // }
+    //       console.table(res)
           start();
-    })
     // })
+    })
   })
 }
 
@@ -172,7 +184,7 @@ connection.connect(function(err) {
 
   function employeesByDepartment() {
     // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
-    var query = "SELECT * FROM department;";
+    var query = "SELECT title_name, first_name, last_name, department_name FROM role, employee, department";
       connection.query(query, function(err, res) {
         if (err) throw err;
       console.table(res)
@@ -195,16 +207,63 @@ connection.connect(function(err) {
  
 
   function addDepartment() {
-    inquirer
-    .prompt({
-      name: "newDepartment",
-      type: "input",
-      message: "Enter New Department?"
-    },
-    ).then(function(answer){
-      
+    connection.query("SELECT * FROM department", function(err, results) {
+      if (err) throw err;
+      inquirer
+      .prompt([
+        {
+        name: "choice",
+        type: "rawlist",
+        message: "Enter New Department name?",
+        choices: function() {
+          var choiceArray = [];
+          for (var i = 0; i < results.length; i++) {
+            // pushes item to result[array].item_name which is in the table
+            choiceArray.push(results[i].department_name);
+          }
+          return choiceArray;
+        },
+      },
+      {
+        name: "id",
+        type: "input",
+        message: "new department number?"
+      }
+      // need to be able to enter a new department and not pick from ones already there
+      ]).then(function(answer){
+      console.log(answer);
+        var newDepartment;
+        for (var i = 0; i < results.length; i++) {
+          if (results[i].department === answer.id) {
+            newDepartment = results[i];
+            console.log(newDepartment);
+            console.log(answer.id);
+           }
+         }
+         if (newDepartment < (answer.id)) {
+          // bid was high enough, so update db, let the user know, and start over
+          connection.query(
+            "INSERT INTO department SET ? WHERE ?",
+            [
+              {
+                department_name: answer.choice
+              },
+              {
+                id: newDepartment.id
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+              console.log("department created successfully!");
+              start();
+            }
+            );
+          }
+          else {console.log("system error...");}
+          start();
     })
-  }
+  })
+}
 //   should add input 
 
   function viewRoles() { var query = "SELECT * FROM role;";
@@ -227,8 +286,13 @@ connection.connect(function(err) {
       message: "Enter New Role Title?"
     },
     ).then(function(answer){
-      
+      var query = "INSERT INTO role;";
+      connection.query(query, function(err, res) {
+        if (err) throw err;
+      console.table(res)
+      start();  
     })
-  }
+  })
+}
 //   adds new role option to roles
 //     input salary?

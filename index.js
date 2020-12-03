@@ -1,8 +1,7 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 const cTable = require('console.table');
-const employee = [];
-const emp = {};
+// const employee = [];
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -16,7 +15,7 @@ var connection = mysql.createConnection({
   // Your password
   password: "KFields@1991!",
 //   Don't Forget to input DATABASE NAME HERE
-  database: "mysqlemployee_trackerDB"
+  database: "employee_tracker2020DB"
 });
 
 connection.connect(function(err) {
@@ -83,7 +82,6 @@ connection.connect(function(err) {
         }
       });
   }
-//   creating functions for cases
 
   function employeeView() {
     var query = "SELECT employee_id, first_name, last_name, title_name, department_name, salary, manager_id FROM ((role INNER JOIN employee ON role.role_id = employee.role_id) INNER JOIN department ON role.department_id = department.department_id);"
@@ -93,8 +91,6 @@ connection.connect(function(err) {
       start();
     })
   }
-  // SELECT employee_id, first_name, last_name FROM employee
-//   should render all employees list and info
 
   function addEmployee() {
     empArr = []
@@ -132,12 +128,10 @@ connection.connect(function(err) {
           }, function(err) {
             if (err) throw err;
             })
-            // chooseManager();
             // start();
           })
   })
 }
-  // connection.query("SELECT department_id, role_id, title_name FROM role INNER JOIN department ON role.department_id = department.department_id;;", function(err, results) {}
 
 function chooseTitle() {
   const title = [];
@@ -172,12 +166,8 @@ function chooseTitle() {
             title.push(chosenTitle.title_name);
           }
         }
-        console.log(typeof chosenTitle.title_name);
-        console.log(chosenTitle.title_name, answer.choice);
-        console.log(typeof answer.choice);
-        // determine if bid was high enough
+
         if (chosenTitle.title_name === answer.choice) {
-          // bid was high enough, so update db, let the user know, and start over
           connection.query(
             "INSERT INTO role SET ?",
             [
@@ -190,13 +180,10 @@ function chooseTitle() {
               // employee.push(title);
               console.log("Title chosen successfully!");
               start();
-              // NOT WORKING. UNHANDLED PROMISE?
-              // start();
             }
             );
           }
           else {
-            // bid wasn't high enough, so apologize and start over
             console.log("error");
             // chooseManager();
           }
@@ -204,7 +191,7 @@ function chooseTitle() {
       })
       // chooseManager();
 }
-// currently not running
+// currently not working how I'd hoped
 function chooseManager() {
   connection.query("SELECT manager_id FROM employee;", function(err, results) {
     if (err) throw err;
@@ -254,7 +241,6 @@ function chooseManager() {
           );
         }
         else {
-          // bid wasn't high enough, so apologize and start over
           console.log("error");
           start();
         }
@@ -276,7 +262,7 @@ function chooseManager() {
           choices: function() {
             var choiceArray = [];
             for (var i = 0; i < res.length; i++) {
-              // pushes item to result[array].item_name which is in the table
+              // pushes item to result[array]. which is in the table
               choiceArray.push(res[i].department_name);
             }
             console.log(choiceArray);
@@ -339,20 +325,12 @@ function chooseManager() {
               console.log("Title chosen successfully!");
               start();
               // NOT WORKING. UNHANDLED PROMISE?
-              // start();
             }
             );
           })
 
   }
-    // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
-  //     console.table(res)
-  //     start();
-  //   });
-  // })
-// //   should render a chart of employees based off of which department they're in
-// //       choice of different departments to choose from >rawlist< 
-// //           followed by employee list for chosen
+
 
   function viewDepartments() { var query = "SELECT department_name FROM department;";
       connection.query(query, function(err, res) {
@@ -360,11 +338,9 @@ function chooseManager() {
       console.table(res)
       start();
     })}
-//   should render the different available departments
-//   ?and employees in each?
- 
 
-  function addDepartment() {
+
+    function addDepartment() {
     connection.query("SELECT * FROM department", function(err, results) {
       if (err) throw err;
     inquirer
@@ -400,12 +376,12 @@ function chooseManager() {
   console.table(res)
   start();
 })}
-// //   should render different role options
-// //   list of roles available
 
-//   function updateEmployeeRole() {},
+// UNDER CONSTRUCTION
+  function updateEmployeeRole() {}
 // //   choice of employee roles to choose from
 
+// This function is still being worked out
   function addRole() { 
     var query = "SELECT title_name, salary FROM role INNER JOIN department ON role.department_id = department.department_id;";
     connection.query(query, function(err, results) {
@@ -458,24 +434,3 @@ function chooseManager() {
     });
   })
   }
-    
-  // connection.query(
-    //   "INSERT role_id INTO department, employee SET ?",
-    //   {
-      //     role_id: answer
-      //   }
-      // )
-  //   {
-    //     name: "department",
-    //     type: "rawlist",
-    //     choices: function() {
-    //       var newerArray = [];
-    //       for (var i = 0; i < results.length; i++) {
-    //         // pushes item to result[array].item_name which is in the table
-    //         newerArray.push(results[i].department_name);
-    //       }
-    //       console.log(newerArray);
-    //       return newerArray;
-    //     },
-    //     message: "What department will this role belong too?",
-    // }

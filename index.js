@@ -263,15 +263,93 @@ function chooseManager() {
 }
 
   function employeesByDepartment() {
-    // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
-    var query = "SELECT title_name, first_name, last_name, department_name FROM role, employee, department";
+    var query = "SELECT department_name FROM department";
       connection.query(query, function(err, res) {
         if (err) throw err;
-      console.table(res)
-      start();
+
+      inquirer
+      .prompt([
+        {
+          name: "choice",
+          type: "rawlist",
+          message: "Which department would you like to look at?",
+          choices: function() {
+            var choiceArray = [];
+            for (var i = 0; i < res.length; i++) {
+              // pushes item to result[array].item_name which is in the table
+              choiceArray.push(res[i].department_name);
+            }
+            console.log(choiceArray);
+            return choiceArray;
+          }
+
+        }
+      ]).then(function(answer) {
+        console.log(answer);
+        var chosenDepartment;
+        for (var i = 0; i < res.length; i++) {
+          if (res[i].department_name === answer.choice) {
+            chosenDepartment = res[i];
+            console.log(chosenDepartment);
+          }
+        } 
+        if (chosenDepartment.department_name === answer.choice) {
+          employeeChoice();
+        }  
+      })
     })
+  }
+
+  function employeeChoice() {
+    var query = "SELECT first_name, last_name FROM employee";
+          connection.query(query, function(error, res) {
+            if (error) throw error;
+            inquirer.prompt([
+              {
+                name: "choice",
+                type: "list",
+                message: "list of employees?",
+                choices: function() {
+                  var nextArray = [];
+                  for (var i = 0; i < res.length; i++) {
+                    // pushes item to result[array].item_name which is in the table
+                    nextArray.push(res[i].first_name);
+                    nextArray.push (res[i].last_name);
+                    // nextArray.join()
+                  }
+                  // console.log(nextArray);
+                  return nextArray;
+                }
+      
+              }
+            ]).then(function(answer) {
+              console.log(answer);
+              var chosenEmployee;
+              for (var i = 0; i < res.length; i++) {
+                if (res[i].first_name + " " + res[i].last_name === answer.choice) {
+                  chosenEmployee = res[i];
+                  console.log(chosenEmployee);
+                }
+              } 
+              // employeeView();
+              // connection.query(
+              //   "SELECT employee_id,"
+              // )
+              // employee.push(title);
+              console.log("Title chosen successfully!");
+              start();
+              // NOT WORKING. UNHANDLED PROMISE?
+              // start();
+            }
+            );
+          })
 
   }
+    // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
+  //     console.table(res)
+  //     start();
+  //   });
+  // })
 // //   should render a chart of employees based off of which department they're in
 // //       choice of different departments to choose from >rawlist< 
 // //           followed by employee list for chosen
@@ -308,7 +386,6 @@ function chooseManager() {
         function(err) {
           if (err) throw err;
           console.log("department created successfully!");
-          // re-prompt the user for if they want to bid or post
 
           start();
         }
@@ -329,8 +406,9 @@ function chooseManager() {
 //   function updateEmployeeRole() {},
 // //   choice of employee roles to choose from
 
-  function addRole() {
-    connection.query("SELECT title_name, salary FROM role;", function(err, results) {
+  function addRole() { 
+    var query = "SELECT title_name, salary FROM role INNER JOIN department ON role.department_id = department.department_id;";
+    connection.query(query, function(err, results) {
       if (err) throw err;
     inquirer
     .prompt([
@@ -343,21 +421,22 @@ function chooseManager() {
         name: "salary",
         type: "input",
         message: "What will be the salary for this role?",
-      }
-      //   {
-      //     name: "department",
-      //     type: "rawlist",
-      //     choices: function() {
-      //       var newerArray = [];
-      //       for (var i = 0; i < results.length; i++) {
-      //         // pushes item to result[array].item_name which is in the table
-      //         newerArray.push(results[i].department_name);
-      //       }
-      //       console.log(newerArray);
-      //       return newerArray;
-      //     },
-      //     message: "What department will this role belong too?",
-      // }
+      },
+      // {
+      //   name: "choice",
+      //   type: "rawlist",
+      //   // message: "Which department id will this role belong to?",
+      //   choices: function() {
+      //     var anotherArray = [];
+      //     for (var i = 0; i < results.length; i++) {
+      //       // pushes item to result[array].item_name which is in the table
+      //       anotherArray.push(results[i].department_id);
+      //     }
+      //     console.log(anotherArray);
+      //     return anotherArray;
+      //   },
+      //   message: "Which id will be assigned to new role?"
+      //  }
     ])
     .then(function(answer) {
       // when finished prompting, insert a new item into the db with that info
@@ -366,21 +445,37 @@ function chooseManager() {
         {
           title_name: answer.name,
           salary: answer.salary,
+          // department__id: answer.choice
           // department_name: answer.department
         },
         function(err) {
           if (err) throw err;
           console.log("role created successfully!");
-        
-        
-          // connection.query(
-        //   "INSERT role_id INTO department, employee SET ?",
-        //   {
-        //     role_id: answer
-        //   }
-        // )
-        start();
-      })
-      });
-    })
-}
+          
+          start();
+        }
+      );
+    });
+  })
+  }
+    
+  // connection.query(
+    //   "INSERT role_id INTO department, employee SET ?",
+    //   {
+      //     role_id: answer
+      //   }
+      // )
+  //   {
+    //     name: "department",
+    //     type: "rawlist",
+    //     choices: function() {
+    //       var newerArray = [];
+    //       for (var i = 0; i < results.length; i++) {
+    //         // pushes item to result[array].item_name which is in the table
+    //         newerArray.push(results[i].department_name);
+    //       }
+    //       console.log(newerArray);
+    //       return newerArray;
+    //     },
+    //     message: "What department will this role belong too?",
+    // }

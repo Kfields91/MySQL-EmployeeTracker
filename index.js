@@ -1,6 +1,8 @@
 var mysql = require("mysql");
 var inquirer = require("inquirer");
 const cTable = require('console.table');
+const employee = [];
+const emp = {};
 
 var connection = mysql.createConnection({
   host: "localhost",
@@ -84,18 +86,19 @@ connection.connect(function(err) {
 //   creating functions for cases
 
   function employeeView() {
-    var query = "SELECT * FROM employee;";
+    var query = "SELECT employee_id, first_name, last_name, title_name, department_name, salary, manager_id FROM ((role INNER JOIN employee ON role.role_id = employee.role_id) INNER JOIN department ON role.department_id = department.department_id);"
     connection.query(query, function(err, res) {
         if (err) throw err;
       console.table(res)
       start();
     })
   }
+  // SELECT employee_id, first_name, last_name FROM employee
 //   should render all employees list and info
 
   function addEmployee() {
-
-    connection.query("SELECT manager_id, first_name, last_name, role_id FROM employee", function(err, results) {
+    empArr = []
+    connection.query("SELECT employee_id, first_name, last_name, title_name, salary, manager_id FROM employee INNER JOIN role on employee.role_id = role.role_id;", function(err, results) {
       if (err) throw err;
       
     inquirer
@@ -109,78 +112,155 @@ connection.connect(function(err) {
           name: "lastname",
           type: "input",
           message: "Employee's last name?"
-        },
-        {
-          name: "role",
-          type: "list",
-          message: "Which Role would you like to assign?",
-          choices: [
-            "1",
-            "2",
-            "3",
-            "4",
-            "5",
-            "6",
-            "7"
-          ]
-        },
-        {
-          name: "manager",
-          type: "list",
-          message: "Select Manager ID new employe will be placed under?",
-          choices : [
-            "1",
-            "2",
-            "3",
-            "4"
-          ]
         }
-    
-  
-  // })
-    
-    
-  ]).then(function(answer) {
-      console.log(answer);
-    //   // CONNECTION MESSED UP BECAUSE ROLE_ID AND MANAGER_ID TAKE IN INTEGERS AND I"M CURRENTLY TRYING TO PASS THEM STRINGS
-    //   // var query = "SELECT first_name, last_name, role_id, manager_id";
-    //  var query = "INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES ?";
-    //   connection.query(query, (answer.firstname, answer.lastname, answer.role, answer.manager), function(err, res) {
-    //         if (err) throw err;
-    //         // for (var i = 0; i < res.length; i++) {
-    //         //   console.log(
-    //         //     "first_name: " +
-    //         //       res[i].firstname +
-    //         //       " || last_name: " +
-    //         //       res[i].lastname +
-    //         //       " || role_id: " +
-    //         //       res[i].role +
-    //         //       " || manager_id: " +
-    //         //       res[i].manager
-    //         //   );
-    //         // }
-    //       console.table(res)
-          start();
-    // })
-    })
+      ]).then(function(answer) {
+        console.log(answer);
+        empArr.push(answer.firstname, answer.lastname);
+        console.log(empArr);
+        chooseTitle();
+        // console.log(answer.choice);
+        connection.query(
+          "INSERT INTO employee SET ?",
+          {
+            first_name: answer.firstname,
+            last_name: answer.lastname
+            
+          },
+          "INSERT INTO role set ?",
+          {
+            title_name: answer.choice
+          }, function(err) {
+            if (err) throw err;
+            })
+            // chooseManager();
+            // start();
+          })
   })
 }
+  // connection.query("SELECT department_id, role_id, title_name FROM role INNER JOIN department ON role.department_id = department.department_id;;", function(err, results) {}
 
+function chooseTitle() {
+  const title = [];
+  // query the database for all items being auctioned
+  connection.query("SELECT role_id, title_name FROM role INNER JOIN department ON role.department_id = department.department_id;", function(err, results) {
+    if (err) throw err;
+    // once you have the items, prompt the user for which they'd like to bid on
+    inquirer
+      .prompt([
+        {
+          name: "choice",
+          type: "rawlist",
+          choices: function() {
+            var choiceArray = [];
+            for (var i = 0; i < results.length; i++) {
+              // pushes item to result[array].item_name which is in the table
+              choiceArray.push(results[i].title_name);
+            }
+            console.log(choiceArray);
+            return choiceArray;
 
-// function managersFunc() {
-//   connection.query("FROM employee (manager_id) VALUES (?)", [answer.manager], function(err, res) {
-//     if (err) throw err;
-//   console.table(res)
-//   start();
-// })
-// }
-//  should add employee to list of employees
-//     input: firstname
-//     input: lastname
-//     list option for: title/role
-//     list option for: department
-//     input:  salary
-//     list option for: manager
+          },
+          message: "Which Title will the new employee be assigned?"
+        }
+      ])
+      .then(function(answer) {
+        // get the information of the chosen item
+        var chosenTitle;
+        for (var i = 0; i < results.length; i++) {
+          if (results[i].title_name === answer.choice) {
+            chosenTitle = results[i];
+            title.push(chosenTitle.title_name);
+          }
+        }
+        console.log(typeof chosenTitle.title_name);
+        console.log(chosenTitle.title_name, answer.choice);
+        console.log(typeof answer.choice);
+        // determine if bid was high enough
+        if (chosenTitle.title_name === answer.choice) {
+          // bid was high enough, so update db, let the user know, and start over
+          connection.query(
+            "INSERT INTO role SET ?",
+            [
+              {
+                title_name: answer.choice
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+              // employee.push(title);
+              console.log("Title chosen successfully!");
+              start();
+              // NOT WORKING. UNHANDLED PROMISE?
+              // start();
+            }
+            );
+          }
+          else {
+            // bid wasn't high enough, so apologize and start over
+            console.log("error");
+            // chooseManager();
+          }
+        });
+      })
+      // chooseManager();
+}
+// currently not running
+function chooseManager() {
+  connection.query("SELECT manager_id FROM employee;", function(err, results) {
+    if (err) throw err;
+    // once you have the items, prompt the user for which they'd like to bid on
+    inquirer
+      .prompt([
+        {
+          name: "choice",
+          type: "rawlist",
+          choices: function() {
+            var newArray = [];
+            for (var i = 0; i < results.length; i++) {
+              // pushes item to result[array].item_name which is in the table
+              newArray.push(results[i].manager_id);
+            }
+            console.log(newArray);
+            return newArray;
+          },
+          message: "Which manager will be assigned to this employee?"
+        }
+      ])
+      .then(function(answer) {
+        // get the information of the chosen item
+        var chosenManager;
+        for (var i = 0; i < results.length; i++) {
+          if (results[i].manager_id === answer.choice) {
+            chosenManager = results[i];
+          }
+        }
+
+        // determine if bid was high enough
+        if (chosenManager.manager_id === answer.choice) {
+          // bid was high enough, so update db, let the user know, and start over
+          connection.query(
+            "INSERT employee SET ?",
+            [
+              {
+                manager_id: answer.choice
+              }
+            ],
+            function(error) {
+              if (error) throw err;
+              console.log("Manager chosen successfully!");
+              // start();
+              start();
+            }
+          );
+        }
+        else {
+          // bid wasn't high enough, so apologize and start over
+          console.log("error");
+          start();
+        }
+      });
+  })
+}
 
   function employeesByDepartment() {
     // is this where we would write a JOIN STATEMENT or in SCHEMA.SQL??
@@ -192,11 +272,11 @@ connection.connect(function(err) {
     })
 
   }
-//   should render a chart of employees based off of which department they're in
-//       choice of different departments to choose from >rawlist< 
-//           followed by employee list for chosen
+// //   should render a chart of employees based off of which department they're in
+// //       choice of different departments to choose from >rawlist< 
+// //           followed by employee list for chosen
 
-  function viewDepartments() { var query = "SELECT * FROM department;";
+  function viewDepartments() { var query = "SELECT department_name FROM department;";
       connection.query(query, function(err, res) {
         if (err) throw err;
       console.table(res)
@@ -209,64 +289,35 @@ connection.connect(function(err) {
   function addDepartment() {
     connection.query("SELECT * FROM department", function(err, results) {
       if (err) throw err;
-      inquirer
-      .prompt([
-        {
-        name: "choice",
-        type: "rawlist",
-        message: "Enter New Department name?",
-        choices: function() {
-          var choiceArray = [];
-          for (var i = 0; i < results.length; i++) {
-            // pushes item to result[array].item_name which is in the table
-            choiceArray.push(results[i].department_name);
-          }
-          return choiceArray;
-        },
-      },
+    inquirer
+    .prompt([
       {
-        name: "id",
+        name: "name",
         type: "input",
-        message: "new department number?"
-      }
-      // need to be able to enter a new department and not pick from ones already there
-      ]).then(function(answer){
-      console.log(answer);
-        var newDepartment;
-        for (var i = 0; i < results.length; i++) {
-          if (results[i].department === answer.id) {
-            newDepartment = results[i];
-            console.log(newDepartment);
-            console.log(answer.id);
-           }
-         }
-         if (newDepartment < (answer.id)) {
-          // bid was high enough, so update db, let the user know, and start over
-          connection.query(
-            "INSERT INTO department SET ? WHERE ?",
-            [
-              {
-                department_name: answer.choice
-              },
-              {
-                id: newDepartment.id
-              }
-            ],
-            function(error) {
-              if (error) throw err;
-              console.log("department created successfully!");
-              start();
-            }
-            );
-          }
-          else {console.log("system error...");}
-          start();
-    })
-  })
-}
-//   should add input 
+        message: "What is the name of the department you would like to add?"
+      },
+    ])
+    .then(function(answer) {
+      // when finished prompting, insert a new item into the db with that info
+      connection.query(
+        "INSERT INTO department SET ?",
+        {
+          department_name: answer.name,
+          // department_id: answer.id
+        },
+        function(err) {
+          if (err) throw err;
+          console.log("department created successfully!");
+          // re-prompt the user for if they want to bid or post
 
-  function viewRoles() { var query = "SELECT * FROM role;";
+          start();
+        }
+      );
+    });
+  })
+  }
+
+  function viewRoles() { var query = "SELECT title_name, salary, department_name FROM role INNER JOIN department ON role.department_id = department.department_id;";
   connection.query(query, function(err, res) {
     if (err) throw err;
   console.table(res)
@@ -279,20 +330,57 @@ connection.connect(function(err) {
 // //   choice of employee roles to choose from
 
   function addRole() {
+    connection.query("SELECT title_name, salary FROM role;", function(err, results) {
+      if (err) throw err;
     inquirer
-    .prompt({
-      name: "newRole",
-      type: "input",
-      message: "Enter New Role Title?"
-    },
-    ).then(function(answer){
-      var query = "INSERT INTO role;";
-      connection.query(query, function(err, res) {
-        if (err) throw err;
-      console.table(res)
-      start();  
+    .prompt([
+      {
+        name: "name",
+        type: "input",
+        message: "What is the name of the role you would like to add?"
+      },
+      {
+        name: "salary",
+        type: "input",
+        message: "What will be the salary for this role?",
+      }
+      //   {
+      //     name: "department",
+      //     type: "rawlist",
+      //     choices: function() {
+      //       var newerArray = [];
+      //       for (var i = 0; i < results.length; i++) {
+      //         // pushes item to result[array].item_name which is in the table
+      //         newerArray.push(results[i].department_name);
+      //       }
+      //       console.log(newerArray);
+      //       return newerArray;
+      //     },
+      //     message: "What department will this role belong too?",
+      // }
+    ])
+    .then(function(answer) {
+      // when finished prompting, insert a new item into the db with that info
+      connection.query(
+        "INSERT INTO role SET ?",
+        {
+          title_name: answer.name,
+          salary: answer.salary,
+          // department_name: answer.department
+        },
+        function(err) {
+          if (err) throw err;
+          console.log("role created successfully!");
+        
+        
+          // connection.query(
+        //   "INSERT role_id INTO department, employee SET ?",
+        //   {
+        //     role_id: answer
+        //   }
+        // )
+        start();
+      })
+      });
     })
-  })
 }
-//   adds new role option to roles
-//     input salary?

@@ -110,9 +110,9 @@ connection.connect(function(err) {
           message: "Employee's last name?"
         }
       ]).then(function(answer) {
-        console.log(answer);
-        empArr.push(answer.firstname, answer.lastname);
-        console.log(empArr);
+        // console.log(answer);
+        // empArr.push(answer.firstname, answer.lastname);
+        // console.log(empArr);
         chooseTitle();
         // console.log(answer.choice);
         connection.query(
@@ -150,7 +150,7 @@ function chooseTitle() {
               // pushes item to result[array].item_name which is in the table
               choiceArray.push(results[i].title_name);
             }
-            console.log(choiceArray);
+            // console.log(choiceArray);
             return choiceArray;
 
           },
@@ -178,14 +178,15 @@ function chooseTitle() {
             function(error) {
               if (error) throw err;
               // employee.push(title);
-              console.log("Title chosen successfully!");
+              console.log(` \n Title chosen successfully! \n `);
+              // chooseManager();
               start();
+              
             }
             );
           }
           else {
             console.log("error");
-            // chooseManager();
           }
         });
       })
@@ -207,7 +208,7 @@ function chooseManager() {
               // pushes item to result[array].item_name which is in the table
               newArray.push(results[i].manager_id);
             }
-            console.log(newArray);
+            // console.log(newArray);
             return newArray;
           },
           message: "Which manager will be assigned to this employee?"
@@ -265,18 +266,18 @@ function chooseManager() {
               // pushes item to result[array]. which is in the table
               choiceArray.push(res[i].department_name);
             }
-            console.log(choiceArray);
+            // console.log(choiceArray);
             return choiceArray;
           }
 
         }
       ]).then(function(answer) {
-        console.log(answer);
+        // console.log(answer);
         var chosenDepartment;
         for (var i = 0; i < res.length; i++) {
           if (res[i].department_name === answer.choice) {
             chosenDepartment = res[i];
-            console.log(chosenDepartment);
+            // console.log(chosenDepartment);
           }
         } 
         if (chosenDepartment.department_name === answer.choice) {
@@ -309,12 +310,12 @@ function chooseManager() {
       
               }
             ]).then(function(answer) {
-              console.log(answer);
+              // console.log(answer);
               var chosenEmployee;
               for (var i = 0; i < res.length; i++) {
                 if (res[i].first_name + " " + res[i].last_name === answer.choice) {
                   chosenEmployee = res[i];
-                  console.log(chosenEmployee);
+                  // console.log(chosenEmployee);
                 }
               } 
               // employeeView();
@@ -322,7 +323,7 @@ function chooseManager() {
               //   "SELECT employee_id,"
               // )
               // employee.push(title);
-              console.log("Title chosen successfully!");
+              // console.log("Title chosen successfully!");
               start();
               // NOT WORKING. UNHANDLED PROMISE?
             }
@@ -378,7 +379,10 @@ function chooseManager() {
 })}
 
 // UNDER CONSTRUCTION
-  function updateEmployeeRole() {}
+  function updateEmployeeRole() {
+    console.log(` \n Currently unavailable... \n `);
+    start();
+  }
 // //   choice of employee roles to choose from
 
 // This function is still being worked out

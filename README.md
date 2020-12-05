@@ -71,7 +71,8 @@ There is currently an error when adding employee that will continued to be worke
 
 ### Contact-Information
 
+[Project Page](https://kfields91.github.io/MySQL-EmployeeTracker/)
+
 [Github Profile](https://github.com/KFields91)
-kelsea.fields@yahoo.com
 
 <a href="https://img.shields.io/badge/JavaScipt-100%-yellow"><img alt="JavaScript use" src="https://img.shields.io/badge/JavaScipt-100%25-yellow"></a> <a href="https://img.shields.io/badge/Used-Node.js-red"><img alt="Node.js use" src="https://img.shields.io/badge/Used-Node.js-red"></a> <a href="https://img.shields.io/badge/npm-Inquirer-orange"><img alt="npm package Inquirer" src="https://img.shields.io/badge/npm-Inquirer-orange"> <a href="https://img.shields.io/badge/Used-MySQL.js-green"><img alt="MySQL use" src="https://img.shields.io/badge/Used-MySQL-green"></a>

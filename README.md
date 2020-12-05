@@ -26,6 +26,8 @@ Currently there are some prompts that are not functioning as hoped.
 - update Employee role
 - add role
 
+![MySQLVideo.gif](MySQLVideo.gif)
+
 ### Installation
 
 ###### ATTENTION: Node.js installation is required prior to use!

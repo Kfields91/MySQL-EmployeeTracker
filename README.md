@@ -1,4 +1,3 @@
-![mysql1](https://user-images.githubusercontent.com/68616301/101226432-51ee0d00-3649-11eb-924e-463a57e50c59.png)
 
 # MySQL-EmployeeTracker
 
